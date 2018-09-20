@@ -29,21 +29,132 @@ shinyUI(fluidPage(
   # Sidebar with a slider input for number of bins 
   sidebarLayout(fluid = T,
     sidebarPanel(width = 3,
-      selectInput("region", label = "Select region",
-        choices = regions,
-        selected = "UK",
-        multiple = TRUE
-                  ),
-      selectInput("tenure", label = "Select tenure type",
-        choices = tenure_types,
-        selected = "Owner occupier",
-        multiple = TRUE
+                 
+                 # LATTICE TABSET
+      conditionalPanel(
+        condition = "input.tabset_1 == 'Lattice'",
+        selectInput("region", label = "Select region",
+                    choices = regions,
+                    selected = "UK",
+                    multiple = TRUE
+          )        
+      ),
+      conditionalPanel(
+        condition = "input.tabset_1 == 'Lattice'",
+        selectInput("tenure", label = "Select tenure type",
+                    choices = tenure_types,
+                    selected = "Owner occupier",
+                    multiple = TRUE
+        )
+      ),        
+
+                 # DIFFERENCE: REGION
+    # Filter on tenure, difference by region
+    conditionalPanel(
+      condition = "input.tabset_1 == 'Difference between regions'",
+      selectInput("region_filter", label = "Select region of interest",
+                  choices = regions,
+                  selected = "UK", 
+                  multiple = FALSE
+                  )
+    ),
+    conditionalPanel(
+      condition = "input.tabset_1 == 'Difference between regions'",
+      selectInput("tenure_1", label = "Select first tenure type",
+                  choices = tenure_types,
+                  selected = "Owner occupier",
+                  multiple = FALSE
+                  )
+    ),
+    conditionalPanel(
+      condition = "input.tabset_1 == 'Difference between regions'",
+      selectInput("tenure_2", label = "Select second tenure type",
+                  choices = tenure_types,
+                  selected = "Private rent",
+                  multiple = FALSE
+        )
+      ),
+    # DIFFERENCE: TENURE
+    # Filter on region, difference by tenure
+    conditionalPanel(
+      condition = "input.tabset_1 == 'Difference between tenures'",
+      selectInput("tenure_filter", label = "Select tenure of interest",
+                  choices = tenure_types,
+                  selected = "Owner occupier", 
+                  multiple = FALSE
       )
     ),
+    conditionalPanel(
+      condition = "input.tabset_1 == 'Difference between tenures'",
+      selectInput("region_1", label = "Select first region",
+                  choices = regions,
+                  selected = "London",
+                  multiple = FALSE
+      )
+    ),
+    conditionalPanel(
+      condition = "input.tabset_1 == 'Difference between tenures'",
+      selectInput("region_2", label = "Select second region",
+                  choices = regions,
+                  selected = "North/Wales",
+                  multiple = FALSE
+      )
+    ),
+    
+    # 3D surface - single tenure within single region
+    conditionalPanel(
+      condition = "input.tabset_1 == '3D surface plot'",
+      selectInput("surface_region", label = "Select region to show 3D surface",
+                  choices = regions,
+                  selected = "UK",
+                  multiple = FALSE
+      )
+    ),
+    conditionalPanel(
+      condition = "input.tabset_1 == '3D surface plot'",
+      selectInput("surface_tenure", label = "Select tenure type to show 3D surface",
+                  choices = tenure_types,
+                  selected = "Owner occupier",
+                  multiple = FALSE
+      )
+    ),
+    # 3D surface composition - single region, show composition within region
+    conditionalPanel(
+      condition = "input.tabset_1 == '3D surface composition'",
+      selectInput("surface_composition_region", label = "Select region to show 3D surface",
+                  choices = regions,
+                  selected = "UK",
+                  multiple = FALSE
+      )
+    )
+    
+    
 
-    # Show a plot of the generated distribution
+    ),
     mainPanel(width = 9,
-       plotlyOutput("heatmap")
+      tabsetPanel(id = "tabset_1", type = "tab",
+        tabPanel(
+          title = "Lattice",
+          plotlyOutput("heatmap")
+        ),
+        tabPanel(
+          title = "Difference between regions",
+          plotlyOutput("heatmap_diff_region")
+        ),
+        tabPanel(
+          title = "Difference between tenures",
+          plotlyOutput("heatmap_diff_tenure")
+        ),
+        tabPanel(
+          title = "3D surface plot",
+          plotlyOutput("3d_surface", height = 800)
+        ),
+        tabPanel(
+          title = "3D surface composition",
+          plotlyOutput("3d_surface_composition", height = 800)
+        )
+      )
     )
   )
-))
+)
+)
