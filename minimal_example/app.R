@@ -10,8 +10,8 @@ library(tidyverse)
 library(shiny)
 library(RColorBrewer)
 library(plotly)
-
-read_csv("data/FRS HBAI - tables v1.csv") %>% 
+read_csv("https://github.com/JonMinton/housing_tenure_explorer/blob/master/data/FRS%20HBAI%20-%20tables%20v1.csv?raw=true") %>% 
+#read_csv("data/FRS HBAI - tables v1.csv") %>% 
   select(
     region = regname, year = yearcode, age = age2, tenure = tenurename, n = N_ten4s, N = N_all2
   ) %>% 

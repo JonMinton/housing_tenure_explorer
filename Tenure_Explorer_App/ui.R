@@ -11,6 +11,8 @@ library(shiny)
 library(RColorBrewer)
 library(plotly)
 
+source("scripts/palette_set.R")
+
 read_csv("data/FRS HBAI - tables v1.csv") %>% 
   select(
     region = regname, year = yearcode, age = age2, tenure = tenurename, n = N_ten4s, N = N_all2
@@ -19,6 +21,26 @@ read_csv("data/FRS HBAI - tables v1.csv") %>%
 regions <- unique(dta$region)
 
 tenure_types <- unique(dta$tenure)
+
+colorscales <- c(
+  'Blackbody',
+    'Bluered',
+    'Blues',
+    'Earth',
+    'Electric',
+    'Greens',
+    'Greys',
+    'Hot',
+    'Jet',
+    'Picnic',
+    'Portland',
+    'Rainbow',
+    'RdBu',
+    'Reds',
+    'Viridis',
+    'YlGnBu',
+    'YlOrRd'
+) 
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
@@ -46,7 +68,9 @@ shinyUI(fluidPage(
                     selected = "Owner occupier",
                     multiple = TRUE
         )
-      ),        
+      ), 
+      
+
 
                  # DIFFERENCE: REGION
     # Filter on tenure, difference by region
@@ -126,6 +150,14 @@ shinyUI(fluidPage(
                   selected = "UK",
                   multiple = FALSE
       )
+    ),
+    
+    conditionalPanel(
+      condition = "input.tabset_1 == 'Lattice' || input.tabset_1 == '3D surface plot'",
+      selectInput("pal_type", label = "Select colour palette",
+                  choices = palette_options,
+                  selected = "adjusted_paired"
+      )
     )
     
     
@@ -138,11 +170,11 @@ shinyUI(fluidPage(
           plotlyOutput("heatmap")
         ),
         tabPanel(
-          title = "Difference between regions",
+          title = "Difference between tenures",
           plotlyOutput("heatmap_diff_region")
         ),
         tabPanel(
-          title = "Difference between tenures",
+          title = "Difference between regions",
           plotlyOutput("heatmap_diff_tenure")
         ),
         tabPanel(
@@ -151,13 +183,13 @@ shinyUI(fluidPage(
         ),
         tabPanel(
           title = "3D surface composition",
-          plotlyOutput("3d_surface_composition", height = 800)
+          plotlyOutput("3d_surface_composition", height = 450),
+          plotlyOutput(("cumulative_slice"))
         ),
         tabPanel(
           title = "3D surface overlaid",
-          plotlyOutput("3d_surface_overlaid", height = 400),
-#          verbatimTextOutput("selection"),
-          plotlyOutput("period_slice")
+          plotlyOutput("3d_surface_overlaid", height = 450),
+          plotlyOutput("slice")
           )
           
 

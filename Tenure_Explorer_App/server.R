@@ -22,13 +22,29 @@ read_csv("data/FRS HBAI - tables v1.csv") %>%
     proportion = n / N
   ) -> dta 
 
+source("scripts/palette_set.R")
 
 pal <- colorRampPalette(brewer.pal(11, "Paired"))(200)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
+  
+  pal_set <- reactive({
+    palname <- input$pal_type
+    if (palname == "adjusted_paired"){
+      out <- colorRampPalette(adjusted_paired)(200)
+    } else if (palname == "cubeyf"){
+      out <- cubeyf_palette 
+    } else {
+      out <- colorRampPalette(brewer.pal(11, palname))(200)
+    }
+    return(out)
+  })
+  
    
   output$heatmap <- renderPlotly({
+    
+    pal <- pal_set()
     
     range_x <- range(dta$year)
     range_y <- range(dta$age)
@@ -41,19 +57,29 @@ shinyServer(function(input, output) {
       ggplot(aes(x = year, y = age, fill = proportion)) + 
       geom_tile() + 
       facet_grid(region ~ tenure) +
+      scale_fill_gradientn(colours = pal) + 
       guides(fill = FALSE) -> p
     
     p %>% ggplotly(
+      # autocolorscale = F,
+      # colorscale = list(
+      #   seq(from = 0, to = 1, length.out = length(pal)),
+      #   pal
+      # ),
       width = length(unique(dta_ss$tenure)) * (num_years * 10) + 150, 
       height = length(unique(dta_ss$region)) * (num_ages * 10) + 50
       
     ) -> p
     
     k <- length(p$x$data)
-
+    
     p %>% 
       style(
-        colorscale = "Rainbow",
+        # autocolorscale = F,
+        # colorscale = list(
+        #   seq(from = 0, to = 1, length.out = length(pal)),
+        #   pal
+        # ),
         showscale = F,
         zauto = F,
         zmin = 0, zmax = 1,
@@ -64,6 +90,8 @@ shinyServer(function(input, output) {
     p1
     
   })
+  
+  
   output$heatmap_diff_region <- renderPlotly({
     
     range_x <- range(dta$year)
@@ -156,6 +184,7 @@ shinyServer(function(input, output) {
 
   output$`3d_surface` <- renderPlotly({
 
+    pal <- pal_set()
     
     matrixify <- function(X, colname){
       tmp <- X %>% 
@@ -184,7 +213,11 @@ shinyServer(function(input, output) {
       add_surface(
         x = ~prop_mtrx$ages, y = ~prop_mtrx$years, z = prop_mtrx$vals,
         cmin = 0, cmax = 1, 
-        cauto = F
+        cauto = F,
+        colorscale = list(
+          seq(from = 0, to = 1, length.out = length(pal)),
+          pal
+        )
       ) %>% 
       layout(
         scene = list(
@@ -214,7 +247,7 @@ shinyServer(function(input, output) {
       tmp %>% spread(age, !!colname) -> tmp
       years <- pull(tmp, year)
       tmp <- tmp %>% select(-year)
-      ages <- names(tmp)
+      ages <- as.numeric(names(tmp))
       mtrx <- as.matrix(tmp)
       return(list(ages = ages, years = years, vals = mtrx))
     }
@@ -307,11 +340,11 @@ shinyServer(function(input, output) {
         opacity = 0.7,
         colorscale = list(
           c(0,1),
-          c('rgb(255,255,0)' , 'rgb(255,255,0)')
+          c('#ff7f0e' , '#ff7f0e')
         ),
         hoverinfo = "text",
         text = custom_oo
-
+        
       ) %>% 
       add_surface(
         x = ~surface_sr$ages, y = ~surface_sr$years, z = surface_sr$vals,
@@ -319,7 +352,7 @@ shinyServer(function(input, output) {
         opacity = 0.7,
         colorscale = list(
           c(0,1),
-          c('rgb(255,0,0)' , 'rgb(255,0,0)')
+          c('#d62728' , '#d62728')
         ),
         hoverinfo = "text",
         text = custom_sr
@@ -331,7 +364,7 @@ shinyServer(function(input, output) {
         opacity = 0.7,
         colorscale = list(
           c(0,1),
-          c('rgb(0,255,0)' , 'rgb(0,255,0)')
+          c('#1f77b4' , '#1f77b4')
         ),
         hoverinfo = "text",
         text = custom_pr
@@ -343,7 +376,7 @@ shinyServer(function(input, output) {
         opacity = 0.7,
         colorscale = list(
           c(0,1),
-          c('rgb(0,0,255)' , 'rgb(0,0,255)')
+          c('#2ca02c' , '#2ca02c')
         ),
         hoverinfo = "text",
         text = custom_rf
@@ -368,6 +401,7 @@ shinyServer(function(input, output) {
         )      )
     
   })
+  
   output$`3d_surface_overlaid` <- renderPlotly({
     # Start with a fixed example 
     
@@ -450,6 +484,8 @@ shinyServer(function(input, output) {
     n_years <- length(surface_oo$years)
     n_ages <- length(surface_oo$ages)
     
+    # Use consistent colours for surface and subplots
+    # See: https://stackoverflow.com/questions/40673490/how-to-get-plotly-js-default-colors-list
     plot_ly(
       showscale = F
     ) %>% 
@@ -459,7 +495,7 @@ shinyServer(function(input, output) {
         opacity = 0.7,
         colorscale = list(
           c(0,1),
-          c('rgb(255,255,0)' , 'rgb(255,255,0)')
+          c('#ff7f0e' , '#ff7f0e')
         ),
         hoverinfo = "text",
         text = custom_oo
@@ -471,7 +507,7 @@ shinyServer(function(input, output) {
         opacity = 0.7,
         colorscale = list(
           c(0,1),
-          c('rgb(255,0,0)' , 'rgb(255,0,0)')
+          c('#d62728' , '#d62728')
         ),
         hoverinfo = "text",
         text = custom_sr
@@ -483,7 +519,7 @@ shinyServer(function(input, output) {
         opacity = 0.7,
         colorscale = list(
           c(0,1),
-          c('rgb(0,255,0)' , 'rgb(0,255,0)')
+          c('#1f77b4' , '#1f77b4')
         ),
         hoverinfo = "text",
         text = custom_pr
@@ -495,7 +531,7 @@ shinyServer(function(input, output) {
         opacity = 0.7,
         colorscale = list(
           c(0,1),
-          c('rgb(0,0,255)' , 'rgb(0,0,255)')
+          c('#2ca02c' , '#2ca02c')
         ),
         hoverinfo = "text",
         text = custom_rf
@@ -531,7 +567,61 @@ shinyServer(function(input, output) {
     
   })
   
-  output$period_slice <- renderPlotly({
+  output$cumulative_slice <- renderPlotly({
+    dta_ss <- dta %>%
+      filter(region == input$surface_composition_region) %>%
+      select(year, age, tenure, proportion) %>% 
+      group_by(year, age) %>% 
+      mutate(cumulative_proportion = cumsum(proportion)) %>% 
+      mutate(prev = lag(cumulative_proportion, default = 0)) %>% 
+      ungroup() 
+    
+    s <- event_data("plotly_hover")
+    if (length(s) == 0){return(NULL)}
+    
+    this_age <- s$x
+    this_year <- s$y
+    
+    this_cohort <- this_year - this_age
+    
+
+    
+    dta_ss %>% 
+      filter(year == this_year) %>% 
+      group_by(tenure) %>% 
+      plot_ly(x = ~age, color = ~tenure) %>% 
+      add_ribbons(ymax = ~cumulative_proportion, ymin = ~prev )  -> p1
+    
+    
+    dta_ss %>% 
+      filter(age == this_age) %>% 
+      group_by(tenure) %>% 
+      plot_ly(x = ~year, color = ~tenure) %>% 
+      add_ribbons(ymax = ~cumulative_proportion, ymin = ~prev, showlegend = F)  -> p2
+    
+    dta_ss %>%
+      mutate(birth_cohort = year - age) %>% 
+      filter(birth_cohort == this_cohort) %>%
+      arrange(age) %>% 
+      group_by(tenure) %>% 
+      plot_ly(x = ~age, color = ~tenure) %>% 
+      add_ribbons(ymax = ~cumulative_proportion, ymin = ~prev, showlegend = F)  -> p3
+    
+    p <- subplot(list(p1, p2, p3), shareY = T, shareX = F) %>% 
+      layout(
+        yaxis = list(title = "Cumulative Proportion", range = c(0,1)),
+        title = paste0("Cross sections at age ", this_age, ", year ", this_year, ", and birth cohort ", this_cohort),
+        xaxis = list(title = "Age in years", range = c(15, 80)),
+        xaxis2 = list(title = "Year", range = c(1995, 2018)),
+        xaxis3 = list(title = paste0("Age for ", this_cohort, " birth cohort"), range = c(15, 80))
+
+      )
+    return(p)
+
+  })
+  
+  output$slice <- renderPlotly({
+    
     dta_ss <- dta %>%
       filter(region == input$surface_composition_region) %>%
       select(year, age, tenure, proportion)
@@ -540,6 +630,7 @@ shinyServer(function(input, output) {
     
     this_age <- s$x
     this_year <- s$y
+    this_cohort <- this_year - this_age
     
     dta_ss %>% 
       filter(year == this_year) %>% 
@@ -553,15 +644,25 @@ shinyServer(function(input, output) {
       plot_ly(x = ~year, y = ~proportion, color = ~tenure, symbol = ~tenure) %>% 
       add_trace(mode = 'lines+markers', showlegend = F)  -> p2
     
-    p <- subplot(p1, p2, shareY = T, shareX = F) %>% 
+    dta_ss %>%
+      mutate(birth_cohort = year - age) %>% 
+      filter(birth_cohort == this_cohort) %>%
+      arrange(age) %>% 
+      group_by(tenure) %>% 
+      plot_ly(x = ~age, y = ~proportion, color = ~tenure, symbol = ~tenure) %>% 
+      add_trace(mode = 'lines+markers', showlegend = F)  -> p3
+    
+    p <- subplot(list(p1, p2, p3), shareY = T, shareX = F) %>% 
       layout(
-        yaxis = list(title = "Proportion", range = c(0,1)),
-        title = paste0("Cross sections at age ", this_age, " and year ", this_year),
+        yaxis = list(title = "Cumulative Proportion", range = c(0,1)),
+        title = paste0("Cross sections at age ", this_age, ", year ", this_year, ", and birth cohort ", this_cohort),
         xaxis = list(title = "Age in years", range = c(15, 80)),
-        xaxis2 = list(title = "Year", range = c(1995, 2018))
-
+        xaxis2 = list(title = "Year", range = c(1995, 2018)),
+        xaxis3 = list(title = paste0("Age for ", this_cohort, " birth cohort"), range = c(15, 80))
+        
       )
     return(p)
-
+    
   })
+  
 })
