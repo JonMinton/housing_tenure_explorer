@@ -120,7 +120,7 @@ shinyUI(fluidPage(
     ),
     # 3D surface composition - single region, show composition within region
     conditionalPanel(
-      condition = "input.tabset_1 == '3D surface composition'",
+      condition = "input.tabset_1 == '3D surface composition' | input.tabset_1 == '3D surface overlaid'",
       selectInput("surface_composition_region", label = "Select region to show 3D surface",
                   choices = regions,
                   selected = "UK",
@@ -152,9 +152,18 @@ shinyUI(fluidPage(
         tabPanel(
           title = "3D surface composition",
           plotlyOutput("3d_surface_composition", height = 800)
+        ),
+        tabPanel(
+          title = "3D surface overlaid",
+          plotlyOutput("3d_surface_overlaid", height = 400),
+#          verbatimTextOutput("selection"),
+          plotlyOutput("period_slice")
+          )
+          
+
         )
       )
     )
   )
 )
-)
+
