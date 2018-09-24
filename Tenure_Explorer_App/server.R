@@ -239,7 +239,6 @@ shinyServer(function(input, output) {
   })
   
   output$`3d_surface_composition` <- renderPlotly({
-    # Start with a fixed example 
     
     matrixify <- function(X, colname){
       tmp <- X %>% 
@@ -294,39 +293,40 @@ shinyServer(function(input, output) {
       matrixify("proportion")
     
     custom_text <- paste0(
-      "Year: ", rep(tooltip_oo$years, times = length(tooltip_oo$ages)), "\t",
-      "Age: ", rep(tooltip_oo$ages, each = length(tooltip_oo$years)), "\n",
+      "Year: ", rep(tooltip_oo$years, each = length(tooltip_oo$ages)), "\t",
+      "Age: ", rep(tooltip_oo$ages, times = length(tooltip_oo$years)), "\n",
       "Composition: ", 
-      "OO: ", round(tooltip_oo$vals, 2), "; ",
-      "SR: ", round(tooltip_sr$vals, 2), "; ",
-      "PR: ", round(tooltip_pr$vals, 2), "; ",
-      "Other: ", round(tooltip_rf$vals, 2)
+      "OO: ", round(t(tooltip_oo$vals), 2), "; ",
+      "SR: ", round(t(tooltip_sr$vals), 2), "; ",
+      "PR: ", round(t(tooltip_pr$vals), 2), "; ",
+      "Other: ", round(t(tooltip_rf$vals), 2)
     ) %>% 
-      matrix(length(tooltip_oo$years), length(tooltip_oo$ages))
+      matrix(length(tooltip_oo$ages), length(tooltip_oo$years)) 
+
     
     custom_oo <- paste0(
-      "Owner occupation: ", 100 * round(tooltip_oo$vals, 3), " percent\n",
+      "Owner occupation: ", 100 * round(t(tooltip_oo$vals), 3), " percent\n",
       custom_text
     ) %>% 
-      matrix(length(tooltip_oo$years), length(tooltip_oo$ages))
+      matrix(length(tooltip_oo$ages), length(tooltip_oo$years)) 
 
     custom_sr <- paste0(
-      "Social rented: ", 100 * round(tooltip_sr$vals, 3), " percent\n",
+      "Social rented: ", 100 * round(t(tooltip_sr$vals), 3), " percent\n",
       custom_text
     ) %>% 
-      matrix(length(tooltip_oo$years), length(tooltip_oo$ages))
+      matrix(length(tooltip_oo$ages), length(tooltip_oo$years)) 
 
     custom_pr <- paste0(
-      "Private rented: ", 100 * round(tooltip_pr$vals, 3), " percent\n",
+      "Private rented: ", 100 * round(t(tooltip_pr$vals), 3), " percent\n",
       custom_text
     ) %>% 
-      matrix(length(tooltip_oo$years), length(tooltip_oo$ages))
+      matrix(length(tooltip_oo$ages), length(tooltip_oo$years)) 
     
     custom_rf <- paste0(
-      "Other: ", 100 * round(tooltip_rf$vals, 3), " percent\n",
+      "Other: ", 100 * round(t(tooltip_rf$vals), 3), " percent\n",
       custom_text
     ) %>% 
-      matrix(length(tooltip_oo$years), length(tooltip_oo$ages))
+      matrix(length(tooltip_oo$ages), length(tooltip_oo$years)) 
     
     n_years <- length(surface_oo$years)
     n_ages <- length(surface_oo$ages)
@@ -335,7 +335,7 @@ shinyServer(function(input, output) {
       showscale = F
     ) %>% 
       add_surface(
-        x = ~surface_oo$ages, y = ~surface_oo$years, z = surface_oo$vals,
+        y = ~surface_oo$ages, x = ~surface_oo$years, z = t(surface_oo$vals),
         name = "Owner Occupiers",
         opacity = 0.7,
         colorscale = list(
@@ -347,7 +347,7 @@ shinyServer(function(input, output) {
         
       ) %>% 
       add_surface(
-        x = ~surface_sr$ages, y = ~surface_sr$years, z = surface_sr$vals,
+        y = ~surface_sr$ages, x = ~surface_sr$years, z = t(surface_sr$vals),
         name = "Social renters",
         opacity = 0.7,
         colorscale = list(
@@ -359,7 +359,7 @@ shinyServer(function(input, output) {
         
       ) %>% 
       add_surface(
-        x = ~surface_pr$ages, y = ~surface_pr$years, z = surface_pr$vals,
+        y = ~surface_pr$ages, x = ~surface_pr$years, z = t(surface_pr$vals),
         name = "Private renters",
         opacity = 0.7,
         colorscale = list(
@@ -371,7 +371,7 @@ shinyServer(function(input, output) {
         
       ) %>% 
       add_surface(
-        x = ~surface_rf$ages, y = ~surface_rf$years, z = surface_rf$vals,
+        y = ~surface_rf$ages, x = ~surface_rf$years, z = t(surface_rf$vals),
         name = "Other",
         opacity = 0.7,
         colorscale = list(
@@ -386,13 +386,13 @@ shinyServer(function(input, output) {
       layout(
         scene = list(
           aspectratio = list(
-            x = n_ages / n_years, y = 1, z = 0.5
+            x = n_years / n_ages, y = 1, z = 0.5
           ),
           xaxis = list(
-            title = "Age in years"
+            title = "Year"
           ),
           yaxis = list(
-            title = "Year"
+            title = "Age in years"
           ),
           zaxis = list(
             title = "Cumulative Proportion"
@@ -401,6 +401,7 @@ shinyServer(function(input, output) {
         )      )
     
   })
+  
   
   output$`3d_surface_overlaid` <- renderPlotly({
     # Start with a fixed example 
@@ -447,39 +448,39 @@ shinyServer(function(input, output) {
     tooltip_rf <- surface_rf
     
     custom_text <- paste0(
-      "Year: ", rep(tooltip_oo$years, times = length(tooltip_oo$ages)), "\t",
-      "Age: ", rep(tooltip_oo$ages, each = length(tooltip_oo$years)), "\n",
+      "Year: ", rep(tooltip_oo$years, each = length(tooltip_oo$ages)), "\t",
+      "Age: ", rep(tooltip_oo$ages, times = length(tooltip_oo$years)), "\n",
       "Composition: ", 
-      "OO: ", round(tooltip_oo$vals, 2), "; ",
-      "SR: ", round(tooltip_sr$vals, 2), "; ",
-      "PR: ", round(tooltip_pr$vals, 2), "; ",
-      "Other: ", round(tooltip_rf$vals, 2)
+      "OO: ", round(t(tooltip_oo$vals), 2), "; ",
+      "SR: ", round(t(tooltip_sr$vals), 2), "; ",
+      "PR: ", round(t(tooltip_pr$vals), 2), "; ",
+      "Other: ", round(t(tooltip_rf$vals), 2)
     ) %>% 
-      matrix(length(tooltip_oo$years), length(tooltip_oo$ages))
+      matrix(length(tooltip_oo$ages), length(tooltip_oo$years)) 
     
     custom_oo <- paste0(
-      "Owner occupation: ", 100 * round(tooltip_oo$vals, 3), " percent\n",
+      "Owner occupation: ", 100 * round(t(tooltip_oo$vals), 3), " percent\n",
       custom_text
     ) %>% 
-      matrix(length(tooltip_oo$years), length(tooltip_oo$ages))
+      matrix(length(tooltip_oo$ages), length(tooltip_oo$years)) 
     
     custom_sr <- paste0(
-      "Social rented: ", 100 * round(tooltip_sr$vals, 3), " percent\n",
+      "Social rented: ", 100 * round(t(tooltip_sr$vals), 3), " percent\n",
       custom_text
     ) %>% 
-      matrix(length(tooltip_oo$years), length(tooltip_oo$ages))
+      matrix(length(tooltip_oo$ages), length(tooltip_oo$years)) 
     
     custom_pr <- paste0(
-      "Private rented: ", 100 * round(tooltip_pr$vals, 3), " percent\n",
+      "Private rented: ", 100 * round(t(tooltip_pr$vals), 3), " percent\n",
       custom_text
     ) %>% 
-      matrix(length(tooltip_oo$years), length(tooltip_oo$ages))
+      matrix(length(tooltip_oo$ages), length(tooltip_oo$years)) 
     
     custom_rf <- paste0(
-      "Other: ", 100 * round(tooltip_rf$vals, 3), " percent\n",
+      "Other: ", 100 * round(t(tooltip_rf$vals), 3), " percent\n",
       custom_text
     ) %>% 
-      matrix(length(tooltip_oo$years), length(tooltip_oo$ages))
+      matrix(length(tooltip_oo$ages), length(tooltip_oo$years))
     
     n_years <- length(surface_oo$years)
     n_ages <- length(surface_oo$ages)
@@ -487,10 +488,11 @@ shinyServer(function(input, output) {
     # Use consistent colours for surface and subplots
     # See: https://stackoverflow.com/questions/40673490/how-to-get-plotly-js-default-colors-list
     plot_ly(
+
       showscale = F
     ) %>% 
       add_surface(
-        x = ~surface_oo$ages, y = ~surface_oo$years, z = surface_oo$vals,
+        y = ~surface_oo$ages, x = ~surface_oo$years, z = t(surface_oo$vals),
         name = "Owner Occupiers",
         opacity = 0.7,
         colorscale = list(
@@ -502,7 +504,7 @@ shinyServer(function(input, output) {
         
       ) %>% 
       add_surface(
-        x = ~surface_sr$ages, y = ~surface_sr$years, z = surface_sr$vals,
+        y = ~surface_sr$ages, x = ~surface_sr$years, z = t(surface_sr$vals),
         name = "Social renters",
         opacity = 0.7,
         colorscale = list(
@@ -514,7 +516,7 @@ shinyServer(function(input, output) {
         
       ) %>% 
       add_surface(
-        x = ~surface_pr$ages, y = ~surface_pr$years, z = surface_pr$vals,
+        y = ~surface_pr$ages, x = ~surface_pr$years, z = t(surface_pr$vals),
         name = "Private renters",
         opacity = 0.7,
         colorscale = list(
@@ -526,7 +528,7 @@ shinyServer(function(input, output) {
         
       ) %>% 
       add_surface(
-        x = ~surface_rf$ages, y = ~surface_rf$years, z = surface_rf$vals,
+        y = ~surface_rf$ages, x = ~surface_rf$years, z = t(surface_rf$vals),
         name = "Other",
         opacity = 0.7,
         colorscale = list(
@@ -541,13 +543,13 @@ shinyServer(function(input, output) {
       layout(
         scene = list(
           aspectratio = list(
-            x = n_ages / n_years, y = 1, z = 0.5
+            x = n_years / n_ages, y = 1, z = 0.5
           ),
           xaxis = list(
-            title = "Age in years"
+            title = "Year"
           ),
           yaxis = list(
-            title = "Year"
+            title = "Age in years"
           ),
           zaxis = list(
             title = "Proportion"
@@ -579,8 +581,8 @@ shinyServer(function(input, output) {
     s <- event_data("plotly_hover")
     if (length(s) == 0){return(NULL)}
     
-    this_age <- s$x
-    this_year <- s$y
+    this_age <- s$y
+    this_year <- s$x
     
     this_cohort <- this_year - this_age
     
@@ -628,8 +630,8 @@ shinyServer(function(input, output) {
     s <- event_data("plotly_hover")
     if (length(s) == 0){return(NULL)}
     
-    this_age <- s$x
-    this_year <- s$y
+    this_age <- s$y
+    this_year <- s$x
     this_cohort <- this_year - this_age
     
     dta_ss %>% 

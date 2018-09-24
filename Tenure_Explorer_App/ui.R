@@ -179,7 +179,7 @@ shinyUI(fluidPage(
         ),
         tabPanel(
           title = "3D surface plot",
-          plotlyOutput("3d_surface", height = 800)
+          plotlyOutput("3d_surface", height = 450)
         ),
         tabPanel(
           title = "3D surface composition",
@@ -191,6 +191,7 @@ shinyUI(fluidPage(
           plotlyOutput("3d_surface_overlaid", height = 450),
           plotlyOutput("slice")
           )
+        
           
 
         )
