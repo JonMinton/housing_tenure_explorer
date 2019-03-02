@@ -332,7 +332,8 @@ shinyServer(function(input, output) {
     n_ages <- length(surface_oo$ages)
     
     plot_ly(
-      showscale = F
+      showscale = F,
+      source = "3d_surface_composition"
     ) %>% 
       add_surface(
         y = ~surface_oo$ages, x = ~surface_oo$years, z = t(surface_oo$vals),
@@ -489,7 +490,8 @@ shinyServer(function(input, output) {
     # See: https://stackoverflow.com/questions/40673490/how-to-get-plotly-js-default-colors-list
     plot_ly(
 
-      showscale = F
+      showscale = F,
+      source = "3d_surface_overlaid"
     ) %>% 
       add_surface(
         y = ~surface_oo$ages, x = ~surface_oo$years, z = t(surface_oo$vals),
@@ -578,7 +580,7 @@ shinyServer(function(input, output) {
       mutate(prev = lag(cumulative_proportion, default = 0)) %>% 
       ungroup() 
     
-    s <- event_data("plotly_hover")
+    s <- event_data("plotly_click", source = "3d_surface_composition")
     if (length(s) == 0){return(NULL)}
     
     this_age <- s$y
@@ -627,7 +629,7 @@ shinyServer(function(input, output) {
     dta_ss <- dta %>%
       filter(region == input$surface_composition_region) %>%
       select(year, age, tenure, proportion)
-    s <- event_data("plotly_hover")
+    s <- event_data("plotly_click", source = "3d_surface_overlaid")
     if (length(s) == 0){return(NULL)}
     
     this_age <- s$y
